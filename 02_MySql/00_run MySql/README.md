@@ -28,10 +28,6 @@ Then run the app.
 ![picture](step10.png)  
 * Paste into the new page the following script:
 ```sql
-
-
-
-
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
@@ -233,14 +229,9 @@ CREATE TABLE IF NOT EXISTS `northwind`.`orders` (
   `status_id` TINYINT(4) NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   INDEX `customer_id` (`customer_id` ASC),
-  INDEX `customer_id_2` (`customer_id` ASC),
   INDEX `employee_id` (`employee_id` ASC),
-  INDEX `employee_id_2` (`employee_id` ASC),
   INDEX `id` (`id` ASC),
-  INDEX `id_2` (`id` ASC),
   INDEX `shipper_id` (`shipper_id` ASC),
-  INDEX `shipper_id_2` (`shipper_id` ASC),
-  INDEX `id_3` (`id` ASC),
   INDEX `tax_status` (`tax_status_id` ASC),
   INDEX `ship_zip_postal_code` (`ship_zip_postal_code` ASC),
   CONSTRAINT `fk_orders_customers`
@@ -248,22 +239,22 @@ CREATE TABLE IF NOT EXISTS `northwind`.`orders` (
     REFERENCES `northwind`.`customers` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_orders_employees1`
+  CONSTRAINT `fk_orders_employees`
     FOREIGN KEY (`employee_id`)
     REFERENCES `northwind`.`employees` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_orders_shippers1`
+  CONSTRAINT `fk_orders_shippers`
     FOREIGN KEY (`shipper_id`)
     REFERENCES `northwind`.`shippers` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_orders_orders_tax_status1`
+  CONSTRAINT `fk_orders_orders_tax_status`
     FOREIGN KEY (`tax_status_id`)
     REFERENCES `northwind`.`orders_tax_status` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_orders_orders_status1`
+  CONSTRAINT `fk_orders_orders_status`
     FOREIGN KEY (`status_id`)
     REFERENCES `northwind`.`orders_status` (`id`)
     ON DELETE NO ACTION
@@ -361,23 +352,20 @@ CREATE TABLE IF NOT EXISTS `northwind`.`purchase_orders` (
   `approved_date` DATETIME NULL DEFAULT NULL,
   `submitted_by` INT(11) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `id` (`id` ASC),
   INDEX `created_by` (`created_by` ASC),
   INDEX `status_id` (`status_id` ASC),
-  INDEX `id_2` (`id` ASC),
   INDEX `supplier_id` (`supplier_id` ASC),
-  INDEX `supplier_id_2` (`supplier_id` ASC),
-  CONSTRAINT `fk_purchase_orders_employees1`
+  CONSTRAINT `fk_purchase_orders_employees`
     FOREIGN KEY (`created_by`)
     REFERENCES `northwind`.`employees` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_purchase_orders_purchase_order_status1`
+  CONSTRAINT `fk_purchase_orders_purchase_order_status`
     FOREIGN KEY (`status_id`)
     REFERENCES `northwind`.`purchase_order_status` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_purchase_orders_suppliers1`
+  CONSTRAINT `fk_purchase_orders_suppliers`
     FOREIGN KEY (`supplier_id`)
     REFERENCES `northwind`.`suppliers` (`id`)
     ON DELETE NO ACTION
@@ -401,28 +389,25 @@ CREATE TABLE IF NOT EXISTS `northwind`.`inventory_transactions` (
   `comments` VARCHAR(255) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   INDEX `customer_order_id` (`customer_order_id` ASC),
-  INDEX `customer_order_id_2` (`customer_order_id` ASC),
   INDEX `product_id` (`product_id` ASC),
-  INDEX `product_id_2` (`product_id` ASC),
   INDEX `purchase_order_id` (`purchase_order_id` ASC),
-  INDEX `purchase_order_id_2` (`purchase_order_id` ASC),
   INDEX `transaction_type` (`transaction_type` ASC),
-  CONSTRAINT `fk_inventory_transactions_orders1`
+  CONSTRAINT `fk_inventory_transactions_orders`
     FOREIGN KEY (`customer_order_id`)
     REFERENCES `northwind`.`orders` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_inventory_transactions_products1`
+  CONSTRAINT `fk_inventory_transactions_products`
     FOREIGN KEY (`product_id`)
     REFERENCES `northwind`.`products` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_inventory_transactions_purchase_orders1`
+  CONSTRAINT `fk_inventory_transactions_purchase_orders`
     FOREIGN KEY (`purchase_order_id`)
     REFERENCES `northwind`.`purchase_orders` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_inventory_transactions_inventory_transaction_types1`
+  CONSTRAINT `fk_inventory_transactions_inventory_transaction_types`
     FOREIGN KEY (`transaction_type`)
     REFERENCES `northwind`.`inventory_transaction_types` (`id`)
     ON DELETE NO ACTION
@@ -444,9 +429,8 @@ CREATE TABLE IF NOT EXISTS `northwind`.`invoices` (
   `amount_due` DECIMAL(19,4) NULL DEFAULT '0.0000',
   PRIMARY KEY (`id`),
   INDEX `id` (`id` ASC),
-  INDEX `id_2` (`id` ASC),
   INDEX `fk_invoices_orders1_idx` (`order_id` ASC),
-  CONSTRAINT `fk_invoices_orders1`
+  CONSTRAINT `fk_invoices_orders`
     FOREIGN KEY (`order_id`)
     REFERENCES `northwind`.`orders` (`id`)
     ON DELETE NO ACTION
@@ -483,26 +467,21 @@ CREATE TABLE IF NOT EXISTS `northwind`.`order_details` (
   PRIMARY KEY (`id`),
   INDEX `id` (`id` ASC),
   INDEX `inventory_id` (`inventory_id` ASC),
-  INDEX `id_2` (`id` ASC),
-  INDEX `id_3` (`id` ASC),
-  INDEX `id_4` (`id` ASC),
   INDEX `product_id` (`product_id` ASC),
-  INDEX `product_id_2` (`product_id` ASC),
   INDEX `purchase_order_id` (`purchase_order_id` ASC),
-  INDEX `id_5` (`id` ASC),
-  INDEX `fk_order_details_orders1_idx` (`order_id` ASC),
-  INDEX `fk_order_details_order_details_status1_idx` (`status_id` ASC),
-  CONSTRAINT `fk_order_details_orders1`
+  INDEX `fk_order_details_orders_idx` (`order_id` ASC),
+  INDEX `fk_order_details_order_details_status_idx` (`status_id` ASC),
+  CONSTRAINT `fk_order_details_orders`
     FOREIGN KEY (`order_id`)
     REFERENCES `northwind`.`orders` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_order_details_products1`
+  CONSTRAINT `fk_order_details_products`
     FOREIGN KEY (`product_id`)
     REFERENCES `northwind`.`products` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_order_details_order_details_status1`
+  CONSTRAINT `fk_order_details_order_details_status`
     FOREIGN KEY (`status_id`)
     REFERENCES `northwind`.`order_details_status` (`id`)
     ON DELETE NO ACTION
@@ -526,22 +505,19 @@ CREATE TABLE IF NOT EXISTS `northwind`.`purchase_order_details` (
   PRIMARY KEY (`id`),
   INDEX `id` (`id` ASC),
   INDEX `inventory_id` (`inventory_id` ASC),
-  INDEX `inventory_id_2` (`inventory_id` ASC),
   INDEX `purchase_order_id` (`purchase_order_id` ASC),
   INDEX `product_id` (`product_id` ASC),
-  INDEX `product_id_2` (`product_id` ASC),
-  INDEX `purchase_order_id_2` (`purchase_order_id` ASC),
-  CONSTRAINT `fk_purchase_order_details_inventory_transactions1`
+  CONSTRAINT `fk_purchase_order_details_inventory_transactions`
     FOREIGN KEY (`inventory_id`)
     REFERENCES `northwind`.`inventory_transactions` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_purchase_order_details_products1`
+  CONSTRAINT `fk_purchase_order_details_products`
     FOREIGN KEY (`product_id`)
     REFERENCES `northwind`.`products` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_purchase_order_details_purchase_orders1`
+  CONSTRAINT `fk_purchase_order_details_purchase_orders`
     FOREIGN KEY (`purchase_order_id`)
     REFERENCES `northwind`.`purchase_orders` (`id`)
     ON DELETE NO ACTION
@@ -580,16 +556,11 @@ SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 
- 
-
-If the creation has been success:
- 
 
 
-Now, click refresh and see the new Schema added:
- 
 
-Now, in order to insert data into this DB, we have to paste this script:
+
+
 #
 # Converted from MS Access 2010 Northwind database (northwind.accdb) using
 # Bullzip MS Access to MySQL Version 5.1.242. http://www.bullzip.com
@@ -1245,7 +1216,6 @@ INSERT INTO `suppliers` (`id`, `company`, `last_name`, `first_name`, `email_addr
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 ```
-
 * Select all the sql code, and run execute   
 ![picture](step11.png)  
 * Refresh and see the `nortwind` db   

@@ -20,7 +20,7 @@ city_id 	    	int(3) AUTO_INCREMENT PRIMARY KEY,
 
 city_name 	    	varchar(25),
 
-country_name  		varchar(25)  NOT NULL CHECK (country_name IN ('USA','UK','Israel'))
+country_name  		varchar(25)  NOT NULL 
 
 );
 
@@ -38,9 +38,9 @@ city_id 				int(3) NOT NULL,
 
 publisher_name 	    			varchar(50) NOT NULL UNIQUE ,
 
-publisher_birth_date			date NULL CHECK (publisher_birth_date LIKE '--/--/----'),
+publisher_birth_date			date NULL,
 
-publisher_age 				int(3) NOT NULL CHECK(publisher_age>0 AND publisher_age<120),
+publisher_age 				int(3) NOT NULL,
 
 PRIMARY KEY (publisher_id),
 
@@ -395,3 +395,23 @@ FROM books_category
 ORDER BY category_id DESC, book_id DESC
 ```
 ![picture](books_category5.png)
+
+
+
+***
+### Select - Join commands
+```sql 
+USE bookStore;
+
+SELECT a.book_name,b.publisher_name,
+c.city_name,d.category_name
+FROM books AS a
+JOIN publishers AS b
+JOIN cities AS c
+JOIN categories AS d
+JOIN books_category AS e
+ON a.publisher_id=b.publisher_id
+AND c.city_id=b.city_id
+AND e.book_id=a.book_id
+AND e.category_id=d.category_id
+```

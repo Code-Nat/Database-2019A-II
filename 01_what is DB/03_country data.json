@@ -1,0 +1,35 @@
+[
+    {   
+        "languages": [
+            {
+                "iso639_1": "en",
+                "name": "English"
+            }
+        ]
+    },
+    {
+        "languages": [
+            {
+                "iso639_1": "en",
+                "name": "English"
+            }
+        ]
+    },
+    {     
+
+        "languages": [
+            {
+                "iso639_1": "de",
+                "name": "German"
+            },
+            {
+                "iso639_1": "fr",
+                "name": "French"
+            },
+            {
+                "iso639_1": "it",
+                "name": "Italian"
+            }
+        ]
+    }
+]

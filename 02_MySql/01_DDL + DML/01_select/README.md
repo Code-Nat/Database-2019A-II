@@ -2,9 +2,9 @@
 ```sql
 
 CREATE DATABASE `northwind`;
+
+
 USE `northwind` ;
-
-
 CREATE TABLE `products` (
   `supplier_ids` LONGTEXT NULL DEFAULT NULL,
   `id` INT(11) NOT NULL PRIMARY KEY,
@@ -14,7 +14,7 @@ CREATE TABLE `products` (
   `target_level` INT(11) NULL DEFAULT NULL,
   `quantity_per_unit` VARCHAR(50) NULL DEFAULT NULL,
   `category` VARCHAR(50) NULL DEFAULT NULL
-   );
+);
 
 
 USE `northwind`;
@@ -64,6 +64,7 @@ INSERT INTO `products` VALUES ('1', 97, 'Hot Cereal',  5, 50, 200, NULL,  'Cerea
 INSERT INTO `products` VALUES ('6', 98, 'Vegetable Soup',  1.89, 100, 200, NULL,  'Soups');
 INSERT INTO `products` VALUES ('6', 99, 'Chicken Soup',  1.95, 100, 200, NULL,  'Soups');
 ```
+
 # Basic select
 ```sql
 /*
@@ -444,7 +445,7 @@ AVG requires A numeric value and returns the average value
 ==========================================================
 */
 
---Select the average value for the "list_price" column in the "products" table
+-- Select the average value for the "list_price" column in the "products" table
 SELECT AVG(list_price) AS 'Average Price' 
 FROM products;
 

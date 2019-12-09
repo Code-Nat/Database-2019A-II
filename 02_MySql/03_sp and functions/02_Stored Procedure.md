@@ -1012,7 +1012,62 @@ the result is:
 +----+------------+-----+-------+---------+------+
 ```
 
+## MySQL REPEAT Loop
+The REPEAT statement executes one or more statements until a search condition is true.
+Here is the basic syntax of the REPEAT loop statement:
 
+```sql
+[begin_label:] REPEAT
+    statement
+UNTIL search_condition
+END REPEAT [end_label]
+```
+* The REPEAT executes the statement until the search_condition evaluates to true.
+* The REPEAT checks the search_condition after the execution of statement, therefore, the statement always executes at least once. This is why the REPEAT is also known as a post-test loop.
+* The REPEAT statement can have labels at the beginning and at the end. These labels are optional.
+
+
+This statement creates a stored procedure called RepeatDemo  that uses the REPEAT statement to concatenate numbers from 1 to 9:
+```sql
+DELIMITER $$
+ 
+CREATE PROCEDURE RepeatDemo()
+BEGIN
+    DECLARE counter INT DEFAULT 1;
+    DECLARE result VARCHAR(100) DEFAULT '';
+    
+    REPEAT
+        SET result = CONCAT(result,counter,',');
+        SET counter = counter + 1;
+    UNTIL counter >= 10
+    END REPEAT;
+    
+    -- display result
+    SELECT result;
+END$$
+ 
+DELIMITER ;
+```
+In this stored procedure:
+* First, declare two variables counter and result and set their initial values to 1 and blank. The counter variable is used for counting from 1 to 9 in the loop. And the result variable is used for storing the concatenated string after each loop iteration.
+* Second, append counter value to the result variable using the CONCAT() function until the counter is greater than or equal to 10.
+
+The following statement calls the RepeatDemo() stored procedure:
+
+```sql
+CALL RepeatDemo();
+```
+Here is the output:
+
+```
++--------------------+
+| result             |
++--------------------+
+| 1,2,3,4,5,6,7,8,9, |
++--------------------+
+```
+ 
+Query OK, 0 rows affected (0.02 sec)
 ## MySQL Error Handling in Stored Procedures
 When an error occurs inside a stored procedure, it is important to handle it appropriately, such as continuing or exiting the current code block’s execution, and issuing a meaningful error message.
 

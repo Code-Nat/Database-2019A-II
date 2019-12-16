@@ -49,8 +49,7 @@ BEGIN
  
     IF credit > 50000 THEN
         SET customerLevel = 'PLATINUM';
-    ELSEIF (credit >= 50000 AND 
-            credit <= 10000) THEN
+    ELSEIF (credit >= 50000 AND credit <= 10000) THEN
         SET customerLevel = 'GOLD';
     ELSEIF credit < 10000 THEN
         SET customerLevel = 'SILVER';
@@ -68,6 +67,7 @@ SELECT
     CustomerLevel(creditLimit)
 FROM customers
 ORDER BY customerName;
+
 ```
 ## Calling a stored function in a stored procedure
 The following statement creates a new stored procedure that calls the CustomerLevel() stored function:
@@ -83,12 +83,10 @@ BEGIN
     DECLARE credit DEC(10,2) DEFAULT 0;
     
     -- get credit limit of a customer
-    SELECT 
-        creditLimit 
+    SELECT creditLimit 
     INTO credit
     FROM customers
-    WHERE 
-        customerNumber = customerNo;
+    WHERE customerNumber = customerNo;
     
     -- call the function 
     SET customerLevel = CustomerLevel(credit);

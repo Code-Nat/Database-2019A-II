@@ -501,6 +501,21 @@ Because the customer 141 has a credit limit greater than 50,000, its level is se
 +----------+
 
 ```
+
+These statements call the GetCustomerLevel() stored procedure for customer 103 and show the value of the OUT parameter pCustomerLevel:
+```sql
+CALL GetCustomerLevel(103, @level);
+SELECT @level;
+```
+
+Because the customer 103 has a credit limit less than 50,000, its level is not set
+```
++--------+
+| @level |
++--------+
+| NULL   |
++--------+
+```
 ## MySQL IF-THEN-ELSE statement
 In case you want to execute other statements when the condition in the IF branch does not evaluate to TRUE, you can use the IF-THEN-ELSE statement as follows:
 ```sql
@@ -803,7 +818,7 @@ END LOOP [end_label]
 ```
 The LOOP can have optional labels at the beginning and end of the block.
 
-The LOOP executes the statement_list repeatedly. The statement_list may have one or more statements, each terminated by a semicolon (;) statement delimiter.
+The LOOP executes the statement_list repeatedly. The statement_list may have one or more statements, each terminated by a semicolon (`;`) statement delimiter.
 
 Typically, you terminate the loop when a condition is satisfied by using the LEAVE statement.
 
@@ -841,6 +856,8 @@ BEGIN
         END  IF;
             
         SET  x = x + 1;
+
+        -- if x%2==0 then the condition is falses
         IF  (x mod 2) THEN
             ITERATE  loop_label;
         ELSE
@@ -1067,11 +1084,46 @@ Here is the output:
 +--------------------+
 ```
  
-Query OK, 0 rows affected (0.02 sec)
 ## MySQL Error Handling in Stored Procedures
 When an error occurs inside a stored procedure, it is important to handle it appropriately, such as continuing or exiting the current code block’s execution, and issuing a meaningful error message.
 
 MySQL provides an easy way to define handlers that handle from general conditions such as warnings or exceptions to specific conditions e.g., specific error codes.
+
+### Example
+In the current DB, we do not have a table named 'Bob'. So when we run the following query:
+```sql
+ SELECT * FROM Bob;
+```
+we get this error:
+```
+ERROR 1146 (42S02): Table 'classicmodels.BOB' doesn't exist
+```
+Lets run this Stored Procedure:
+```sql
+DELIMITER $$
+CREATE PROCEDURE TestError()
+BEGIN
+    SELECT 'BEFORE ERROR';
+    SELECT * FROM Bob;
+    SELECT 'AFTER ERROR';
+END$$
+DELIMITER ;
+```
+when we call this sp
+```sql
+CALL TestError();
+```
+we get this output:
+```
++--------------+
+| BEFORE ERROR |
++--------------+
+| BEFORE ERROR |
++--------------+
+1 row in set (0.00 sec)
+
+ERROR 1146 (42S02): Table 'classicmodels.Bob' doesn't exist
+```
 
 ## Declaring a handler
 To declare a handler, you use the  DECLARE HANDLER statement as follows:
@@ -1079,6 +1131,7 @@ To declare a handler, you use the  DECLARE HANDLER statement as follows:
 ```sql
 DECLARE action HANDLER FOR condition_value statement;
 ```
+
 If a condition whose value matches the  condition_value , MySQL will execute the statement and continue or exit the current code block based on the action .
 
 * The action accepts one of the following values:
@@ -1086,7 +1139,7 @@ If a condition whose value matches the  condition_value , MySQL will execute the
     * EXIT : the execution of the enclosing code block, where the handler is declared, terminates.
 * The  condition_value specifies a particular condition or a class of conditions that activate the handler. The  condition_value accepts one of the following values:
     * A MySQL error code.
-    * A standard SQLSTATE value. Or it can be an SQLWARNING , NOTFOUND or SQLEXCEPTION condition, which is shorthand for the class of SQLSTATE values. The NOTFOUND condition is used for a cursor or  SELECT INTO variable_list statement.
+    * A standard SQLSTATE value. Or it can be an SQLWARNING , NOTFOUND or SQLEXCEPTION condition, which is shorthand for the class of SQLSTATE values.
     * A named condition associated with either a MySQL error code or SQLSTATE value.
 * The statement could be a simple statement or a compound statement enclosing by the BEGIN and END keywords.
 
@@ -1108,122 +1161,59 @@ DECLARE CONTINUE HANDLER FOR 1062
 SELECT 'Error, duplicate key occurred';
 ```
 ## MySQL handler example in stored procedures
-First, create a new table named SupplierProductsfor the demonstration:
+In the current DB, we do not have a table named 'Bob'. So when we run the following query:
 ```sql
-CREATE TABLE SupplierProducts (
-    supplierId INT,
-    productId INT,
-    PRIMARY KEY (supplierId , productId)
-);
+ SELECT * FROM Bob;
 ```
-The table SupplierProducts stores the relationships between the table suppliers and products. Each supplier may provide many products and each product can be provided by many suppliers. For the sake of simplicity, we don’t create Products and Suppliers tables, as well as the foreign keys in the  SupplierProducts table.
-
-Second, create a stored procedure that inserts product id and supplier id into the SupplierProducts table:
+we get this error:
+```
+ERROR 1146 (42S02): Table 'classicmodels.BOB' doesn't exist
+```
+Lets run this Stored Procedure:
 ```sql
-CREATE PROCEDURE InsertSupplierProduct(
-    IN inSupplierId INT, 
-    IN inProductId INT
-)
-BEGIN
-    -- exit if the duplicate key occurs
-    DECLARE EXIT HANDLER FOR 1062
-    BEGIN
-     SELECT CONCAT('Duplicate key (',inSupplierId,',',inProductId,') occurred') AS message;
-    END;
-    
-    -- insert a new row into the SupplierProducts
-    INSERT INTO SupplierProducts(supplierId,productId)
-    VALUES(inSupplierId,inProductId);
-    
-    -- return the products supplied by the supplier id
-    SELECT COUNT(*) 
-    FROM SupplierProducts
-    WHERE supplierId = inSupplierId;
-    
-END$$
- 
-DELIMITER ;
-```
-How it works.
-
-The following exit handler terminates the stored procedure whenever a duplicate key occurs (with code 1062). In addition, it returns an error message.
-```sql
-DECLARE EXIT HANDLER FOR 1062
-BEGIN
-    SELECT CONCAT('Duplicate key (',supplierId,',',productId,') occurred') AS message;
-END;
-```
-This statement inserts a row into the SupplierProducts table. If a duplicate key occurs, the code in the handler section will execute.
-```sql
-INSERT INTO SupplierProducts(supplierId,productId) 
-VALUES(supplierId,productId);
-```
-Third, call the InsertSupplierProduct() to insert some rows into the SupplierProducts table:
-```sql
-CALL InsertSupplierProduct(1,1);
-CALL InsertSupplierProduct(1,2);
-CALL InsertSupplierProduct(1,3);
-```
-Fourth, attempt to insert a row whose values already exist in the SupplierProducts table:
-```sql
-CALL InsertSupplierProduct(1,3);
-```
-Here is the error message:
-```
-+------------------------------+
-| message                      |
-+------------------------------+
-| Duplicate key (1,3) occurred |
-+------------------------------+
-```
-Because the handler is an EXIT handler, the last statement does not execute:
-```
-SELECT COUNT(*) 
-FROM SupplierProducts
-WHERE supplierId = inSupplierId;
-```
-If  you change the EXIT in the handler declaration to CONTINUE , you will also get the number of products provided by the supplier:
-```sql
-DROP PROCEDURE IF EXISTS InsertSupplierProduct;
- 
 DELIMITER $$
- 
-CREATE PROCEDURE InsertSupplierProduct(
-    IN inSupplierId INT, 
-    IN inProductId INT
-)
+CREATE PROCEDURE TestHandleError()
 BEGIN
-    -- exit if the duplicate key occurs
-    DECLARE CONTINUE HANDLER FOR 1062
-    BEGIN
-    SELECT CONCAT('Duplicate key (',inSupplierId,',',inProductId,') occurred') AS message;
-    END;
+    DECLARE CONTINUE HANDLER FOR 1146 
+    SELECT 'Please create table first' AS 'Message';
     
-    -- insert a new row into the SupplierProducts
-    INSERT INTO SupplierProducts(supplierId,productId)
-    VALUES(inSupplierId,inProductId);
-    
-    -- return the products supplied by the supplier id
-    SELECT COUNT(*) 
-    FROM SupplierProducts
-    WHERE supplierId = inSupplierId;
-    
+    SELECT 'BEFORE ERROR';
+    SELECT * FROM Bob;
+    SELECT 'AFTER ERROR';
 END$$
- 
 DELIMITER ;
 ```
-Finally, call the stored procedure again to see the effect of the CONTINUE handler:
+when we call this sp
 ```sql
-CALL InsertSupplierProduct(1,3);
+CALL TestHandleError();
 ```
-Here is the output:
+we get this output:
 ```
-+----------+
-| COUNT(*) |
-+----------+
-|        3 |
-+----------+
++--------------+
+| BEFORE ERROR |
++--------------+
+| BEFORE ERROR |
++--------------+
+1 row in set (0.00 sec)
+
++-------------------------------+
+| Message                       |
++-------------------------------+
+| Please create table first     |
++-------------------------------+
+1 row in set (0.00 sec)
+
++-------------+
+| AFTER ERROR |
++-------------+
+| AFTER ERROR |
++-------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
 ```
+
+
 ## MySQL handler precedence
 In case you have multiple handlers that handle the same error, MySQL will call the most specific handler to handle the error first based on the following rules:
 * An error always maps to a MySQL error code because in MySQL it is the most specific.
@@ -1233,97 +1223,102 @@ Based on the handler precedence rules,  MySQL error code handler, SQLSTATE handl
 
 Suppose that we have three handlers in the handlers in the stored procedure insert_article_tags_3 :
 ```sql
-DROP PROCEDURE IF EXISTS InsertSupplierProduct;
- 
 DELIMITER $$
- 
-CREATE PROCEDURE InsertSupplierProduct(
-    IN inSupplierId INT, 
-    IN inProductId INT
-)
+CREATE PROCEDURE TestMultiHandleError1()
 BEGIN
-    -- exit if the duplicate key occurs
-    DECLARE EXIT HANDLER FOR 1062 SELECT 'Duplicate keys error encountered' Message; 
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION SELECT 'SQLException encountered' Message; 
-    DECLARE EXIT HANDLER FOR SQLSTATE '23000' SELECT 'SQLSTATE 23000' ErrorCode;
-    
-    -- insert a new row into the SupplierProducts
-    INSERT INTO SupplierProducts(supplierId,productId)
-    VALUES(inSupplierId,inProductId);
-    
-    -- return the products supplied by the supplier id
-    SELECT COUNT(*) 
-    FROM SupplierProducts
-    WHERE supplierId = inSupplierId;
-    
+    DECLARE CONTINUE HANDLER FOR 1146 
+    SELECT 'Please create table first' AS 'Message1';
+
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION 
+    SELECT 'SQLException encountered' AS 'Message2';
+
+    SELECT 'BEFORE ERROR';
+    SELECT * FROM Bob;
+    SELECT 'AFTER ERROR';
 END$$
- 
 DELIMITER ;
 ```
-Call the stored procedure to insert a duplicate key:
+Call the stored procedure:
 ```sql
-CALL InsertSupplierProduct(1,3);
+CALL TestMultiHandleError1();
 ```
 Here is the output:
-```sql
-+----------------------------------+
-| Message                          |
-+----------------------------------+
-| Duplicate keys error encountered |
-+----------------------------------+
+```
++--------------+
+| BEFORE ERROR |
++--------------+
+| BEFORE ERROR |
++--------------+
+1 row in set (0.00 sec)
+
++---------------------------+
+| Message1                  |
++---------------------------+
+| Please create table first |
++---------------------------+
+1 row in set (0.00 sec)
+
++-------------+
+| AFTER ERROR |
++-------------+
+| AFTER ERROR |
++-------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
 ```
 As you see the MySQL error code handler is called.
 
-## Using a named error condition
-Let’s start with an error handler declaration.
 
 ```sql
 DELIMITER $$
- 
-CREATE PROCEDURE TestProc()
+CREATE PROCEDURE TestMultiHandleError2()
 BEGIN
- 
-    DECLARE EXIT HANDLER FOR 1146 
-    SELECT 'Please create table abc first' Message; 
-        
-    SELECT * FROM abc;
+
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION 
+    SELECT 'SQLException encountered' AS 'Message2';
+
+    DECLARE CONTINUE HANDLER FOR 1146 
+    SELECT 'Please create table first' AS 'Message1';
+
+    SELECT 'BEFORE ERROR';
+    SELECT * FROM Bob;
+    SELECT 'AFTER ERROR';
 END$$
- 
 DELIMITER ;
 ```
-What does the number 1146 really mean? Imagine you have stored procedures polluted with these numbers all over places; it will be difficult to understand and maintain the code.
-
-Fortunately, MySQL provides you with the DECLARE CONDITION statement that declares a named error condition, which associates with a condition.
-
-Here is the syntax of the DECLARE CONDITION statement:
+Call the stored procedure:
 ```sql
-DECLARE condition_name CONDITION FOR condition_value;
+CALL TestMultiHandleError2();
 ```
-The condition_value  can be a MySQL error code such as 1146 or a SQLSTATE value. The condition_value is represented by the condition_name .
+Here is the output:
 
-After the declaration, you can refer to condition_name instead of condition_value .
-
-So you can rewrite the code above as follows:
-
-```sql
-DROP PROCEDURE IF EXISTS TestProc;
- 
-DELIMITER $$
- 
-CREATE PROCEDURE TestProc()
-BEGIN
-    DECLARE TableNotFound CONDITION for 1146 ; 
- 
-    DECLARE EXIT HANDLER FOR TableNotFound 
-    SELECT 'Please create table abc first' Message; 
-    SELECT * FROM abc;
-END$$
- 
-DELIMITER ;
 ```
-As you can see, the code is more obviously and readable than the previous one. Notice that the condition declaration must appear before handler or cursor declarations.
++--------------+
+| BEFORE ERROR |
++--------------+
+| BEFORE ERROR |
++--------------+
+1 row in set (0.00 sec)
 
++---------------------------+
+| Message1                  |
++---------------------------+
+| Please create table first |
++---------------------------+
+1 row in set (0.00 sec)
 
++-------------+
+| AFTER ERROR |
++-------------+
+| AFTER ERROR |
++-------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+```
 
 ## Raising Error Conditions with MySQL SIGNAL  Statements
 You use the SIGNAL statement to return an error or warning condition to the caller from a stored program e.g., stored procedure, stored function, trigger or event. The SIGNAL  statement provides you with control over which information for returning such as value and messageSQLSTATE.
@@ -1346,11 +1341,11 @@ The following stored procedure adds an order line item into an existing sales or
 DELIMITER $$
  
 CREATE PROCEDURE AddOrderItem(
-                 in orderNo int,
+             in orderNo int,
              in productCode varchar(45),
              in qty int, 
-                         in price double, 
-                         in lineNo int )
+             in price double, 
+             in lineNo int )
 BEGIN
     DECLARE C INT;
  
@@ -1363,8 +1358,6 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Order No not found in orders table';
     END IF;
-    -- more code below
-    -- ...
 END
 ```
 First, it counts the orders with the input order number that we pass to the stored procedure.
@@ -1503,9 +1496,8 @@ BEGIN
     DECLARE emailAddress varchar(100) DEFAULT "";
  
     -- declare cursor for employee email
-    DEClARE curEmail 
-        CURSOR FOR 
-            SELECT email FROM employees;
+    DEClARE curEmail CURSOR 
+    FOR SELECT email FROM employees;
  
     -- declare NOT FOUND handler
     DECLARE CONTINUE HANDLER 
@@ -1521,6 +1513,7 @@ BEGIN
         -- build email list
         SET emailList = CONCAT(emailAddress,";",emailList);
     END LOOP getEmail;
+
     CLOSE curEmail;
  
 END$$

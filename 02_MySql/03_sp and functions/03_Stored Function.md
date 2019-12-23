@@ -72,6 +72,7 @@ ORDER BY customerName;
 ## Calling a stored function in a stored procedure
 The following statement creates a new stored procedure that calls the CustomerLevel() stored function:
 ```sql
+
 DELIMITER $$
  
 CREATE PROCEDURE GetCustomerLevel(

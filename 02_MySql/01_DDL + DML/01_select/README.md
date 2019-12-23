@@ -302,7 +302,7 @@ WHERE product_name IN ('Peas', 'Chicken Soup');
 --select all products that are not named 'Peas' or 'Chicken Soup'
 SELECT product_name 
 FROM products
-WHERE product_name IN ('Peas', 'Chicken Soup');
+WHERE product_name NOT IN ('Peas', 'Chicken Soup');
 ```
 
 
@@ -583,9 +583,6 @@ and a repeatable sequence of random numbers if a seed value is used
 
 --Return a random decimal number (no seed value - so it returns a random number >= 0 and <1)
 SELECT RAND() AS 'Round Num';
-
---Return a random decimal number >= 0 and <5
-SELECT RAND(5) AS 'Round Num';
 
 --Return a random decimal number >= 5 and <10
 SELECT RAND()*(10-5)+5 AS 'Round Num';
